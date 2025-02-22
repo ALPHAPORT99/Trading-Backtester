@@ -2,14 +2,12 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
+
+# Try importing pandas_ta (TA-Lib alternative)
 try:
-    import talib
-except ImportError:
-    try:
     import pandas_ta as talib
 except ImportError:
-    st.error("⚠️ pandas_ta is missing! Please check requirements.txt and install it.")
-
+    st.error("⚠️ pandas_ta is missing! Please check `requirements.txt` and install it.")
 
 # Streamlit UI
 st.set_page_config(page_title="Trading Strategy Backtester", layout="wide")
@@ -73,14 +71,9 @@ if run_backtest:
             elif df['MACD'].iloc[i] < df['Signal'].iloc[i] and df['MACD'].iloc[i - 1] >= df['Signal'].iloc[i - 1]:
                 sell_signals.append(df.index[i])
     
-    # Performance Calculation
-    final_value = capital + (position * df['Close'].iloc[-1])
-   # Ensure final_value is a number before performing calculations
-if isinstance(final_value, (int, float)):
+    # Ensure final_value calculation is numeric
+    final_value = capital + (position * df['Close'].iloc[-1]) if not df.empty else capital
     profit_pct = ((final_value - 10000) / 10000) * 100
-else:
-    st.error(f"Unexpected value for final portfolio: {final_value}")
-    profit_pct = 0  # Default to 0% if error occurs
 
     # Metrics Display
     col1, col2 = st.columns(2)
@@ -105,4 +98,3 @@ else:
     # Download Results
     csv = df.to_csv(index=False)
     st.download_button("Download Results as CSV", csv, file_name="backtest_results.csv", mime="text/csv")
-
