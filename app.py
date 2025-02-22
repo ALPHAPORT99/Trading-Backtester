@@ -93,7 +93,7 @@ if run_backtest:
     
     # Display Performance Metrics
     st.subheader("📊 Backtest Results")
-    st.write(f"Final Portfolio Value: ${final_value:,.2f}")
+    st.write(f"Final Portfolio Value: ${final_value.iloc[-1]:,.2f}")
     st.write(f"Total Return: {profit_pct:.2f}%")
     
     # Download Results
