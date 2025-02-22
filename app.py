@@ -3,14 +3,15 @@ import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
 
+# Streamlit must be set first
+st.set_page_config(page_title="Trading Strategy Backtester", layout="wide")
+
 # Try importing pandas_ta (TA-Lib alternative)
 try:
     import pandas_ta as talib
 except ImportError:
-    st.error("⚠️ pandas_ta is missing! Please check `requirements.txt` and install it.")
+    st.warning("⚠️ `pandas_ta` is missing! Please check `requirements.txt` and install it.")
 
-# Streamlit UI
-st.set_page_config(page_title="Trading Strategy Backtester", layout="wide")
 st.title("📈 Trading Strategy Backtester")
 
 # Sidebar Inputs
@@ -84,7 +85,7 @@ if run_backtest:
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', name='Close Price', line=dict(color='blue')))
     if buy_signals:
-        fig.add_trace(go.Scatter(x=buy_signals, y=df.loc[buy_signals]['Close'], mode='markers', name='Buy Signal', marker=dict(color='green', size=10, symbol='triangle-up')))
+        fig.add_trace(go.Scatter(x=buy_signals, y=df.loc[buy_signals]['Close'], mode='markers', name='Buy Signal", marker=dict(color='green', size=10, symbol='triangle-up')))
     if sell_signals:
         fig.add_trace(go.Scatter(x=sell_signals, y=df.loc[sell_signals]['Close'], mode='markers', name='Sell Signal', marker=dict(color='red', size=10, symbol='triangle-down')))
     fig.update_layout(title=f"{ticker} Price Chart with Trading Signals", xaxis_title="Date", yaxis_title="Price", template="plotly_dark")
