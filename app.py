@@ -2,15 +2,6 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
-import talib
-
-# Ensure required libraries are installed
-try:
-    import yfinance as yf
-    import talib
-except ModuleNotFoundError:
-    st.error("Required libraries are missing. Please install using: pip install yfinance ta-lib plotly")
-    st.stop()
 
 # Streamlit UI
 st.set_page_config(page_title="Trading Strategy Backtester", layout="wide")
@@ -32,10 +23,6 @@ if run_backtest:
             if df.empty:
                 st.error("No data found for the selected ticker and date range.")
                 st.stop()
-            df['RSI'] = talib.RSI(df['Close'], timeperiod=14)
-            macd, macdsignal, macdhist = talib.MACD(df['Close'])
-            df['MACD'] = macd
-            df['Signal'] = macdsignal
         except Exception as e:
             st.error(f"Error fetching data: {e}")
             st.stop()
@@ -47,6 +34,7 @@ if run_backtest:
 
     for i in range(1, len(df)):
         if strategy == "Mean Reversion (RSI)":
+            df['RSI'] = df['Close'].rolling(14).mean()
             if df['RSI'].iloc[i] < 30 and position == 0:  # Buy Signal
                 buy_signals.append(df.index[i])
                 position = capital / df['Close'].iloc[i]
@@ -56,6 +44,8 @@ if run_backtest:
                 capital = position * df['Close'].iloc[i]
                 position = 0
         elif strategy == "Momentum (MACD)":
+            df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
+            df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
             if df['MACD'].iloc[i] > df['Signal'].iloc[i] and position == 0:
                 buy_signals.append(df.index[i])
                 position = capital / df['Close'].iloc[i]
