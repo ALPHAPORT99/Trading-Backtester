@@ -79,7 +79,7 @@ if run_backtest:
     # Metrics Display
     col1, col2 = st.columns(2)
     col1.metric("Final Portfolio Value", f"${final_value.iloc[-1]:,.2f}")
-    col2.metric("Total Return", f"{profit_pct:.2f}%")
+    col2.metric("Total Return", f"{profit_pct.iloc[-1]:.2f}%")
     
     # Visualization with Plotly
     fig = go.Figure()
