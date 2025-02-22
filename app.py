@@ -2,6 +2,10 @@ import streamlit as st
 import pandas as pd
 import yfinance as yf
 import plotly.graph_objects as go
+try:
+    import talib
+except ImportError:
+    import pandas_ta as talib
 
 # Streamlit UI
 st.set_page_config(page_title="Trading Strategy Backtester", layout="wide")
