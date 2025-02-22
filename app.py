@@ -12,7 +12,14 @@ st.sidebar.header("⚙️ Settings")
 ticker = st.sidebar.text_input("Enter Stock Ticker (e.g., AAPL, TSLA, BTC-USD)", "AAPL")
 start_date = st.sidebar.date_input("Start Date", pd.to_datetime("2023-01-01"))
 end_date = st.sidebar.date_input("End Date", pd.to_datetime("2024-01-01"))
-strategy = st.sidebar.selectbox("Select Strategy", ["Mean Reversion (RSI)", "Momentum (MACD)"])
+strategy = st.sidebar.selectbox("Select Strategy", [
+    "Simple Moving Average Crossover", "Bollinger Bands", "MACD", "RSI", "Stochastic Oscillator", 
+    "Donchian Channel", "Ichimoku Cloud", "Parabolic SAR", "ADX", "Williams %R", 
+    "Momentum Indicator", "CCI", "ATR", "Hull Moving Average", "Keltner Channel", 
+    "Triple Moving Average Crossover", "Volume Weighted Average Price (VWAP)", "Rate of Change (ROC)", 
+    "Elder Ray Index", "Mass Index", "Chande Momentum Oscillator (CMO)", "Guppy Multiple Moving Averages (GMMA)", 
+    "Ultimate Oscillator", "Force Index", "Ease of Movement (EOM)", "Chaikin Money Flow (CMF)"
+])
 run_backtest = st.sidebar.button("Run Backtest")
 
 # Fetch Data
@@ -31,30 +38,33 @@ if run_backtest:
     buy_signals, sell_signals = [], []
     capital = 10000  # Starting capital
     position = 0  # No position initially
-
-    for i in range(1, len(df)):
-        if strategy == "Mean Reversion (RSI)":
-            df['RSI'] = df['Close'].rolling(14).mean()
-            if df['RSI'].iloc[i] < 30 and position == 0:  # Buy Signal
+    
+    if strategy == "Simple Moving Average Crossover":
+        df['SMA_50'] = df['Close'].rolling(window=50).mean()
+        df['SMA_200'] = df['Close'].rolling(window=200).mean()
+        for i in range(1, len(df)):
+            if df['SMA_50'].iloc[i] > df['SMA_200'].iloc[i] and df['SMA_50'].iloc[i - 1] <= df['SMA_200'].iloc[i - 1]:
                 buy_signals.append(df.index[i])
-                position = capital / df['Close'].iloc[i]
-                capital = 0
-            elif df['RSI'].iloc[i] > 70 and position > 0:  # Sell Signal
+            elif df['SMA_50'].iloc[i] < df['SMA_200'].iloc[i] and df['SMA_50'].iloc[i - 1] >= df['SMA_200'].iloc[i - 1]:
                 sell_signals.append(df.index[i])
-                capital = position * df['Close'].iloc[i]
-                position = 0
-        elif strategy == "Momentum (MACD)":
-            df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
-            df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
-            if df['MACD'].iloc[i] > df['Signal'].iloc[i] and position == 0:
+    
+    elif strategy == "RSI":
+        df['RSI'] = 100 - (100 / (1 + df['Close'].pct_change().rolling(window=14).mean() / df['Close'].pct_change().rolling(window=14).std()))
+        for i in range(1, len(df)):
+            if df['RSI'].iloc[i] < 30:
                 buy_signals.append(df.index[i])
-                position = capital / df['Close'].iloc[i]
-                capital = 0
-            elif df['MACD'].iloc[i] < df['Signal'].iloc[i] and position > 0:
+            elif df['RSI'].iloc[i] > 70:
                 sell_signals.append(df.index[i])
-                capital = position * df['Close'].iloc[i]
-                position = 0
-
+    
+    elif strategy == "MACD":
+        df['MACD'] = df['Close'].ewm(span=12, adjust=False).mean() - df['Close'].ewm(span=26, adjust=False).mean()
+        df['Signal'] = df['MACD'].ewm(span=9, adjust=False).mean()
+        for i in range(1, len(df)):
+            if df['MACD'].iloc[i] > df['Signal'].iloc[i] and df['MACD'].iloc[i - 1] <= df['Signal'].iloc[i - 1]:
+                buy_signals.append(df.index[i])
+            elif df['MACD'].iloc[i] < df['Signal'].iloc[i] and df['MACD'].iloc[i - 1] >= df['Signal'].iloc[i - 1]:
+                sell_signals.append(df.index[i])
+    
     # Performance Calculation
     final_value = capital + (position * df['Close'].iloc[-1])
     profit_pct = ((final_value - 10000) / 10000) * 100
@@ -82,3 +92,4 @@ if run_backtest:
     # Download Results
     csv = df.to_csv(index=False)
     st.download_button("Download Results as CSV", csv, file_name="backtest_results.csv", mime="text/csv")
+
