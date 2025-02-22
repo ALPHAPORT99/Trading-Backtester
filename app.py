@@ -5,7 +5,11 @@ import plotly.graph_objects as go
 try:
     import talib
 except ImportError:
+    try:
     import pandas_ta as talib
+except ImportError:
+    st.error("⚠️ pandas_ta is missing! Please check requirements.txt and install it.")
+
 
 # Streamlit UI
 st.set_page_config(page_title="Trading Strategy Backtester", layout="wide")
