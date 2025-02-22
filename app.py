@@ -73,29 +73,34 @@ if run_backtest:
                 sell_signals.append(df.index[i])
     
     # Ensure final_value calculation is numeric
-    final_value = capital + (position * df['Close'].iloc[-1]) if not df.empty else capital
-    profit_pct = ((final_value - 10000) / 10000) * 100
+    final_value = float(capital + (position * df['Close'].iloc[-1])) if not df.empty else float(capital)
+    profit_pct = float(((final_value - 10000) / 10000) * 100)
 
     # Metrics Display
     col1, col2 = st.columns(2)
-    col1.metric("Final Portfolio Value", f"${final_value.iloc[-1]:,.2f}")
-    col2.metric("Total Return", f"{profit_pct.iloc[-1]:.2f}%")
-    
+    col1.metric("Final Portfolio Value", f"${final_value:,.2f}")
+    col2.metric("Total Return", f"{profit_pct:.2f}%")
+
     # Visualization with Plotly
+    df.index = pd.to_datetime(df.index)  # Ensure correct date formatting
     fig = go.Figure()
     fig.add_trace(go.Scatter(x=df.index, y=df['Close'], mode='lines', name="Close Price", line=dict(color='blue')))
     if buy_signals:
         fig.add_trace(go.Scatter(x=buy_signals, y=df.loc[buy_signals]['Close'], mode='markers', name="Buy Signal", marker=dict(color='green', size=10, symbol='triangle-up')))
     if sell_signals:
         fig.add_trace(go.Scatter(x=sell_signals, y=df.loc[sell_signals]['Close'], mode='markers', name="Sell Signal", marker=dict(color='red', size=10, symbol='triangle-down')))
-    fig.update_layout(title=f"{ticker} Price Chart with Trading Signals", xaxis_title="Date", yaxis_title="Price", template="plotly_dark")
+    fig.update_layout(title=f"{ticker} Price Chart with Trading Signals",
+                      xaxis_title="Date",
+                      yaxis_title="Price",
+                      xaxis=dict(type="date", tickformat="%Y-%m-%d"),
+                      template="plotly_dark")
     st.plotly_chart(fig)
     
     # Display Performance Metrics
     st.subheader("📊 Backtest Results")
-    st.write(f"Final Portfolio Value: ${final_value.iloc[-1]:,.2f}")
+    st.write(f"Final Portfolio Value: ${final_value:,.2f}")
     st.write(f"Total Return: {profit_pct:.2f}%")
-    
+
     # Download Results
     csv = df.to_csv(index=False)
     st.download_button("Download Results as CSV", csv, file_name="backtest_results.csv", mime="text/csv")
