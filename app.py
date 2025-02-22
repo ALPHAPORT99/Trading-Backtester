@@ -78,7 +78,7 @@ if run_backtest:
 
     # Metrics Display
     col1, col2 = st.columns(2)
-    col1.metric("Final Portfolio Value", f"${final_value:,.2f}")  # ✅ FIXED
+    col1.metric("Final Portfolio Value", f"${final_value:,.2f}")
     col2.metric("Total Return", f"{profit_pct:.2f}%")
     
     # Visualization with Plotly
