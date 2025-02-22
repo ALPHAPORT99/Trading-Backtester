@@ -71,7 +71,12 @@ if run_backtest:
     
     # Performance Calculation
     final_value = capital + (position * df['Close'].iloc[-1])
+   # Ensure final_value is a number before performing calculations
+if isinstance(final_value, (int, float)):
     profit_pct = ((final_value - 10000) / 10000) * 100
+else:
+    st.error(f"Unexpected value for final portfolio: {final_value}")
+    profit_pct = 0  # Default to 0% if error occurs
 
     # Metrics Display
     col1, col2 = st.columns(2)
